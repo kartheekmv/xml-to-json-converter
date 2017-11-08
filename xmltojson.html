@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+  function parseXml(){
+     parser=new DOMParser();
+          if (window.XMLHttpRequest)
+          {
+            xmlhttp=new XMLHttpRequest();
+          }
+          else
+          {
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+          }
+          xmlhttp.open("GET","part3.xml",false);
+          xmlhttp.send();
+          xmlDoc = xmlhttp.responseXML;
+          var result=xml2json(xmlDoc);
+          var jsonOutput = JSON.stringify(result,null,'\t');
+          document.write("<html><body><p>"+jsonOutput+"</p></body></html>")
+
+
+  } 
+
+function xml2json(xmlfile) {
+ var jsonObj = {};
+    if (xmlfile.nodeType == 3) {  // text type
+        jsonObj = xmlfile.nodeValue;
+        console.log("data ",xmlfile.nodeValue);
+    } else if (xmlfile.nodeType == 1) {    // Element             
+        if (xmlfile.attributes.length > 0) {
+            jsonObj["@attrs"] = {};
+            for (var iterator = 0; iterator < xmlfile.attributes.length; iterator++) {
+                var attribute = xmlfile.attributes.item(iterator);
+                jsonObj["@attrs"][attribute.nodeName] = attribute.nodeValue;
+            }
+        }
+    }
+    if (xmlfile.hasChildNodes() && xmlfile.childNodes.length === 1 && xmlfile.childNodes[0].nodeType === 3) {
+    jsonObj = xmlfile.childNodes[0].nodeValue;
+  }        
+
+    if (xmlfile.hasChildNodes()) {
+        for (var iterator = 0; iterator < xmlfile.childNodes.length; iterator++) {
+            var item = xmlfile.childNodes.item(iterator);
+            var nn = item.nodeName;
+            if (typeof (jsonObj[nn]) == "undefined") {
+                jsonObj[nn] = xml2json(item);
+            } 
+            else {
+                if (typeof (jsonObj[nn].push) == "undefined") {
+                    var onode = jsonObj[nn];
+                    jsonObj[nn] = [];
+                    jsonObj[nn].push(onode);
+                }
+                jsonObj[nn].push(xml2json(item));
+            }
+        }
+    }
+   return jsonObj;
+};
+</script>
+</head>
+<body>
+  <button onclick="parseXml()">Get JSON</button>
+</body>
+</html>
